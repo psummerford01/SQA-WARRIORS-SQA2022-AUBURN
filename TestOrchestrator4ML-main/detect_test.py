@@ -10,8 +10,7 @@ from datetime import datetime
 def giveTimeStamp():
   tsObj = time.time()
   strToret = datetime.fromtimestamp(tsObj).strftime('%Y-%m-%d %H:%M:%S')
-  return strToret
-   
+  return strToret   
     
 def checkTestFile(path2dir): 
     """
