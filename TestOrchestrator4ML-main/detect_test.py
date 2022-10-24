@@ -11,8 +11,7 @@ def giveTimeStamp():
   tsObj = time.time()
   strToret = datetime.fromtimestamp(tsObj).strftime('%Y-%m-%d %H:%M:%S')
   return strToret   
-   
-   
+    
 def checkTestFile(path2dir): 
     """
     Check if project includes tests.
