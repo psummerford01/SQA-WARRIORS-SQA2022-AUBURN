@@ -181,7 +181,7 @@ def checkForUnitTestImport(pyTree):
 def checkForLibraryImport(pyTree):
     import_list = getImport(pyTree)
     if (constants.TENSOR_LIB in import_list or constants.KERAS_LIB in import_list or constants.TORCH_LIB in import_list or constants.SKLEARN_LIB in import_list):
-        print("import list", import_list)
+        # print("import list", import_list)
         return True
     return False
     
@@ -198,7 +198,7 @@ def getTestNames(pyTree):
     unit_test_import = checkForUnitTestImport(pyTree)
     if unit_test_import:
         func_list = getFunctionDetailsForClaases(pyTree, 1, 0, 0) 
-    print("func list  ", func_list)  
+    # print("func list  ", func_list)  
     return func_list
     
 
