@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import operator 
+import logging
 from operator import itemgetter
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
@@ -15,23 +16,31 @@ from matplotlib import pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
 
+import logging
+logging.basicConfig(filename="logging_output.log", level=logging.DEBUG)
+logger = logging.getLogger("generation/attk-model")
+
 def calculate_k(X_train, X_test, y_train, y_test):
     """
     Training our model on all possible K values (odd) from 3 to 10  
     """
-    kVals = np.arange(3,10,2)
-    accuracies = []
-    for k in kVals:
-        model = KNeighborsClassifier(n_neighbors = k)
-        model.fit(X_train, y_train)
-        pred = model.predict(X_test)
-        acc = accuracy_score(y_test, pred)
-        accuracies.append(acc)
-    max_index = accuracies.index(max(accuracies))
-    print("selected k = " + str(2 * (max_index + 1) + 1))
-    return (2 * (max_index + 1) + 1)
-    
-
+    logger.info(f"calculate_k({X_train}, {X_test}, {y_train}, {y_test})")
+    try:    
+        kVals = np.arange(3,10,2)
+        accuracies = []
+        for k in kVals:
+            model = KNeighborsClassifier(n_neighbors = k)
+            model.fit(X_train, y_train)
+            pred = model.predict(X_test)
+            acc = accuracy_score(y_test, pred)
+            accuracies.append(acc)
+        max_index = accuracies.index(max(accuracies))
+        print("selected k = " + str(2 * (max_index + 1) + 1))
+        return (2 * (max_index + 1) + 1)
+    except Exception as e:
+        logger.error(f"calculate_k({X_train}, {X_test}, {y_train}, {y_test} FAILED: {e}")
+        raise e
+        
 def keras_model():
     model = Sequential()
     model.add(Dense(12, input_dim=12, activation='relu'))
@@ -46,7 +55,8 @@ def prepare_data():
 #     print(mnist.data.shape)
 #     X = mnist.data 
 #     y = mnist.target
-    se_data = pd.read_csv('data//IST_MIR.csv') 
+    se_data = pd.read_csv('data//IST_MIR.csv')
+
     print(se_data.shape)
     X = se_data.iloc[:, 2:14]
     y = se_data['defect_status']
@@ -63,33 +73,38 @@ def prepare_data():
 def perform_inference(X_train, X_test, y_train, y_test, model_name):
     """
     Performing inference of the trained model on the testing set:
-    """
-    
-    if (model_name == 'KNeighborsClassifier') : 
-        k = calculate_k(X_train, X_test, y_train, y_test)
-        model = KNeighborsClassifier(n_neighbors = k)
-    elif (model_name == 'DecisionTreeClassifier') : 
-        model = DecisionTreeClassifier()
-    elif (model_name == 'SVC') : 
-        model = SVC()
-    elif (model_name == 'LinearSVC') : 
-        model = LinearSVC()
-    elif (model_name == 'Dense' or model_name == 'SimpleRNN' or model_name == 'Bidirectional') : 
-        model = keras_model()
-    else:
-        print("else")
-        model = DecisionTreeClassifier()
-    model.fit(X_train, y_train)
-    pred = model.predict(X_test)
-    pred = np.round(abs(pred))
-    acc = accuracy_score(y_test, pred)
-    precision, recall, fscore, _ = precision_recall_fscore_support(y_test, pred, average = 'binary')
-    fpr, tpr, thresholds = roc_curve(y_test, pred)
-    auc_score = auc(fpr, tpr)
-    print("----------testing----------")
-    print("Precision \n", precision)
-    print("\nRecall \n", recall)
-    print("\nF-score \n", fscore)
-    print("\nAUC \n", auc_score)
-    print("----------testing----------")
-    return precision, recall, fscore, auc_score
+    """  
+    logger.info(f"perform_inference({X_train}, {X_test}, {y_train}, {y_test}, {model_name})")
+    try:
+        if (model_name == 'KNeighborsClassifier') : 
+            k = calculate_k(X_train, X_test, y_train, y_test)
+            model = KNeighborsClassifier(n_neighbors = k)
+        elif (model_name == 'DecisionTreeClassifier') : 
+            model = DecisionTreeClassifier()
+        elif (model_name == 'SVC') : 
+            model = SVC()
+        elif (model_name == 'LinearSVC') : 
+            model = LinearSVC()
+        elif (model_name == 'Dense' or model_name == 'SimpleRNN' or model_name == 'Bidirectional') : 
+            model = keras_model()
+        else:
+            print("else")
+            model = DecisionTreeClassifier()
+        model.fit(X_train, y_train)
+        pred = model.predict(X_test)
+        pred = np.round(abs(pred))
+        
+        acc = accuracy_score(y_test, pred)
+        precision, recall, fscore, _ = precision_recall_fscore_support(y_test, pred, average = 'binary')
+        fpr, tpr, thresholds = roc_curve(y_test, pred)
+        auc_score = auc(fpr, tpr)
+        print("----------testing----------")
+        print("Precision \n", precision)
+        print("\nRecall \n", recall)
+        print("\nF-score \n", fscore)
+        print("\nAUC \n", auc_score)
+        print("----------testing----------")
+        return precision, recall, fscore, auc_score
+    except Exception as e:
+        logger.error(f"perform_inference({X_train}, {X_test}, {y_train}, {y_test}, {model_name} FAILED: {e}")
+        raise e
