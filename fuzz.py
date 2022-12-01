@@ -28,7 +28,7 @@ def fuzzMethod(method,values):
                 method(None,None,value,None)
                 method(None,None,None,value)
         except Exception as error:
-            error_output.append("Error in {} with value {}: {}".format(method,value,error))
+            error_output.append("Error in {} with value {}: {}".format(method.__name__,value,error))
 
     return error_output
 
